@@ -1,0 +1,17 @@
+ebin/*.beam
+ebin/*.app
+*.beam
+erl_crash.dump
+deps/
+doc/*.html
+doc/erlang.png
+doc/stylesheet.css
+doc/edoc-info
+.eunit/
+*.swp
+*~
+.#*
+logs/
+log/
+test/*.beam
+.DS_Store
