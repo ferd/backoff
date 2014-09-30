@@ -3,10 +3,10 @@
 -export([init/2, init/4,
          fire/1, get/1, succeed/1, fail/1]).
 -record(backoff, {start=undefined :: pos_integer(),
-                  max=undefined :: pos_integer(),
+                  max=undefined :: pos_integer() | infinity,
                   current=undefined :: pos_integer(),
                   value :: term(),
-                  dest :: pid()}).
+                  dest :: pid() | undefined}).
 
 -opaque backoff() :: #backoff{}.
 
@@ -37,7 +37,7 @@ init(Start,Max) ->
     Start :: pos_integer(),
     Max :: pos_integer() | infinity,
     Value :: term(),
-    Dest :: pid().
+    Dest :: pid() | undefined.
 init(Start, Max, Dest, Value) ->
     #backoff{start=Start, current=Start, max=Max, value=Value, dest=Dest}.
 
