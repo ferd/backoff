@@ -1,12 +1,17 @@
 -module(backoff).
 -export([increment/1, increment/2]).
+-export([rand_increment/1, rand_increment/2]).
+-export([jitter/1]).
 -export([init/2, init/4,
          fire/1, get/1, succeed/1, fail/1]).
 -record(backoff, {start=undefined :: pos_integer(),
                   max=undefined :: pos_integer(),
                   current=undefined :: pos_integer(),
+                  jitter=false :: boolean(),
                   value :: term(),
                   dest :: pid()}).
+
+-define(RAND_FACTOR, 0.5).
 
 -opaque backoff() :: #backoff{}.
 
@@ -20,6 +25,18 @@ increment(N) when is_integer(N) -> N bsl 1.
     N :: pos_integer(),
     Max :: pos_integer().
 increment(N, Max) -> min(increment(N), Max).
+
+%% Algorithm inspired in the Google HTTP Java client implementation of Exponential BackOff.
+%% See: http://javadoc.google-http-java-client.googlecode.com/hg/1.18.0-rc/com/google/api/client/util/ExponentialBackOff.html
+-spec rand_increment(pos_integer()) -> pos_integer().
+rand_increment(N) ->
+    Rand = 1 - ?RAND_FACTOR + random:uniform(),
+    erlang:round(increment(N) * Rand).
+
+-spec rand_increment(N, Max) -> pos_integer() when
+    N :: pos_integer(),
+    Max :: pos_integer().
+rand_increment(N, Max) -> min(rand_increment(N), Max).
 
 %% Increments + Timer support
 
@@ -52,16 +69,28 @@ fire(#backoff{current=Delay, value=Value, dest=Dest}) ->
 -spec get(backoff()) -> pos_integer().
 get(#backoff{current=Delay}) -> Delay.
 
+%% Toggles jitter feature.
+-spec jitter(backoff()) -> backoff().
+jitter(B=#backoff{jitter=false}) ->
+    B#backoff{jitter=true};
+jitter(B=#backoff{jitter=true}) ->
+    B#backoff{jitter=false}.
+
 -spec fail(backoff()) -> {New::pos_integer(), backoff()}.
-fail(B=#backoff{current=Delay, max=infinity}) ->
+fail(B=#backoff{current=Delay, max=infinity, jitter=false}) ->
     NewDelay = increment(Delay),
     {NewDelay, B#backoff{current=NewDelay}};
-fail(B=#backoff{current=Delay, max=Max}) ->
+fail(B=#backoff{current=Delay, max=Max, jitter=false}) ->
     NewDelay = increment(Delay, Max),
+    {NewDelay, B#backoff{current=NewDelay}};
+fail(B=#backoff{current=Delay, max=infinity, jitter=true}) ->
+    NewDelay = rand_increment(Delay),
+    {NewDelay, B#backoff{current=NewDelay}};
+fail(B=#backoff{current=Delay, max=Max, jitter=true}) ->
+    NewDelay = rand_increment(Delay, Max),
     {NewDelay, B#backoff{current=NewDelay}}.
+
 
 -spec succeed(backoff()) -> {New::pos_integer(), backoff()}.
 succeed(B=#backoff{start=Start}) ->
     {Start, B#backoff{current=Start}}.
-
-
