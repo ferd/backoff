@@ -129,4 +129,5 @@ operations.
 
 # Changelog
 
+- 1.0.0: initial commit stable for over a year
 - 0.1.0: initial commit
