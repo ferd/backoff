@@ -2,9 +2,9 @@
 -export([increment/1, increment/2]).
 -export([init/2, init/4,
          fire/1, get/1, succeed/1, fail/1]).
--record(backoff, {start=undefined :: pos_integer(),
-                  max=undefined :: pos_integer(),
-                  current=undefined :: pos_integer(),
+-record(backoff, {start :: pos_integer(),
+                  max :: pos_integer() | infinity,
+                  current :: pos_integer(),
                   value :: term(),
                   dest :: pid()}).
 
@@ -36,8 +36,8 @@ init(Start,Max) ->
 -spec init(Start, Max, Dest, Value) -> backoff() when
     Start :: pos_integer(),
     Max :: pos_integer() | infinity,
-    Value :: term(),
-    Dest :: pid().
+    Value :: term() | undefined,
+    Dest :: pid() | undefined.
 init(Start, Max, Dest, Value) ->
     #backoff{start=Start, current=Start, max=Max, value=Value, dest=Dest}.
 
