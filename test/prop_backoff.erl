@@ -19,6 +19,24 @@ prop_increment_ceiled_increases() ->
              (backoff:increment(X,Y) =:= X andalso X =:= Y))
      )).
 
+%% random increment operations are always returning bigger
+%% and bigger values, assuming positive integers
+prop_rand_increment_increases() ->
+    ?FORALL(X, pos_integer(),
+        backoff:rand_increment(X) > X).
+
+%% random increments should never go higher than the max
+%% value allowed.
+prop_rand_increment_ceiled_increases() ->
+    ?FORALL({X,Y}, backoff_range(),
+        ?WHENFAIL(io:format("~p~n",[{X,Y,backoff:rand_increment(X,Y)}]),
+            backoff:rand_increment(X,Y) =< Y
+            andalso
+            (backoff:rand_increment(X,Y) > X
+             orelse
+             (backoff:rand_increment(X,Y) =:= X andalso X =:= Y))
+     )).
+
 %% increments from an init value always go higher when unbound
 prop_fail_increases() ->
     ?FORALL(S0, backoff_infinity(),

@@ -49,6 +49,28 @@ The version with 2 arguments specifies a ceiling to the value:
     5> backoff:increment(backoff:increment(backoff:increment(2)), 10).
     10
 
+## Simple Backoffs with jitter
+
+Jitter based incremental backoffs increase the back off period for each retry attempt using a randomization function that grows exponentially. They work by calling the functions `rand_increment/1-2`. The function with one argument will grow in an unbounded manner:
+
+    1> backoff:rand_increment(1).
+    3
+    2> backoff:rand_increment(backoff:rand_increment(1)).
+    7
+    3> backoff:rand_increment(backoff:rand_increment(backoff:rand_increment(1))).
+    19
+    4> backoff:rand_increment(backoff:rand_increment(backoff:rand_increment(1))).
+    14
+    5> backoff:rand_increment(backoff:rand_increment(backoff:rand_increment(1))).
+    17
+
+The version with 2 arguments specifies a ceiling to the value:
+
+    6> backoff:rand_increment(backoff:rand_increment(backoff:rand_increment(2))).
+    21
+    7> backoff:rand_increment(backoff:rand_increment(backoff:rand_increment(2)), 10).
+    10
+
 ## State Backoffs
 
 State backoffs keep track of the current value, the initial value, and the
@@ -84,6 +106,28 @@ If what you want are unbound exponential backoffs, you can initiate them with:
     14> backoff:init(Start, 'infinity').
 
 And still use them as usual. The increments will have no upper limit.
+
+## State Backoffs with jitter
+
+You can enable a jitter based incremental backoff by calling `type/2`
+that swaps the state of the backoff:
+
+    1> B0 = backoff:init(2, 30).
+    {backoff,2,30,2,normal,undefined,undefined}
+    2> B1 = backoff:type(B0, jitter).
+    {backoff,2,30,2,jitter,undefined,undefined}
+    3> {_, B2} = backoff:fail(B1).
+    {7, ...}
+    4> {_, B3} = backoff:fail(B2).
+    {12, ...}
+
+Calling `type/2` with argument `normal` will swap the backoff state back
+to its default behavior:
+
+    5> B4 = backoff:type(B3, normal).
+    {backoff,2,30,12,normal,undefined,undefined}
+    6> {_, B5} = backoff:fail(B4).
+    {24, ...}
 
 ## Timeout Events
 
@@ -129,5 +173,5 @@ operations.
 
 # Changelog
 
+- 1.1.0: added jitter based incremental backoff
 - 1.0.0: initial commit stable for over a year
-- 0.1.0: initial commit
