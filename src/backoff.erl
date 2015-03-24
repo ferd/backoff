@@ -30,8 +30,8 @@ increment(N, Max) -> min(increment(N), Max).
 %% See: http://javadoc.google-http-java-client.googlecode.com/hg/1.18.0-rc/com/google/api/client/util/ExponentialBackOff.html
 -spec rand_increment(pos_integer()) -> pos_integer().
 rand_increment(N) ->
-    RandFactor = application:get_env(?MODULE, rand_factor, 0.5),
-    DefMultiplier = application:get_env(?MODULE, def_multiplier, 1.5),
+    RandFactor = get_env(rand_factor, 0.5),
+    DefMultiplier = get_env(def_multiplier, 1.5),
     Rand = 1 - RandFactor + random:uniform(),
     erlang:round(increment(N) * DefMultiplier * Rand).
 
@@ -103,4 +103,10 @@ maybe_seed() ->
         undefined -> random:seed(erlang:now());
         {X,X,X} -> random:seed(erlang:now());
         _ -> ok
+    end.
+
+get_env(Param, Default) ->
+    case application:get_env(?MODULE, Param) of
+        {ok, Value} -> Value;
+        undefined -> Default
     end.
