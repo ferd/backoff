@@ -90,6 +90,19 @@ prop_fire_message() ->
             end
         end).
 
+prop_statem() ->
+    Module = prop_backoff_statem,
+    ?FORALL(Cmds, commands(Module),
+            begin
+                {History, State, Result} = run_commands(Module, Cmds),
+                ?WHENFAIL(begin
+                              io:format("History~n~p~n", [History]),
+                              io:format("State~n~p~n", [State]),
+                              io:format("Result~n~p~n", [Result])
+                          end,
+                          aggregate(command_names(Cmds), Result =:= ok))
+            end).
+
 %% Helpers
 until_fixed_point(S) -> until_fixed_point(S, backoff:get(S)).
 

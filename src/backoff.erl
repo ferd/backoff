@@ -8,13 +8,14 @@
 -record(backoff, {start :: pos_integer(),
                   max :: pos_integer() | infinity,
                   current :: pos_integer(),
-                  type=normal :: normal | jitter,
+                  type=normal :: normal | jitter | decorrelated_jitter,
                   value :: term(),
                   dest :: pid()}).
 
 -opaque backoff() :: #backoff{}.
+-type type() :: normal | jitter | decorrelated_jitter.
 
--export_type([backoff/0]).
+-export_type([backoff/0, type/0]).
 
 %% Just do the increments by hand!
 -spec increment(pos_integer()) -> pos_integer().
@@ -72,10 +73,10 @@ fire(#backoff{current=Delay, value=Value, dest=Dest}) ->
 get(#backoff{current=Delay}) -> Delay.
 
 %% Swaps between the states of the backoff.
--spec type(backoff(), normal | jitter) -> backoff().
-type(#backoff{}=B, jitter) ->
+-spec type(backoff(), type()) -> backoff().
+type(#backoff{}=B, Type) when Type =:= jitter; Type =:= decorrelated_jitter ->
     maybe_seed(),
-    B#backoff{type=jitter};
+    B#backoff{type=Type};
 type(#backoff{}=B, normal) ->
     B#backoff{type=normal}.
 
@@ -91,6 +92,11 @@ fail(B=#backoff{current=Delay, max=infinity, type=jitter}) ->
     {NewDelay, B#backoff{current=NewDelay}};
 fail(B=#backoff{current=Delay, max=Max, type=jitter}) ->
     NewDelay = rand_increment(Delay, Max),
+    {NewDelay, B#backoff{current=NewDelay}};
+%% Decorrelated Jitter, see http://www.awsarchitectureblog.com/2015/03/backoff.html
+fail(B=#backoff{current=Delay, start=Start, max=Max, type=decorrelated_jitter}) ->
+    NextMax = round(Delay * get_env(decorrelated_multiplier, 3)),
+    NewDelay = min(Max, rand_between(Start, NextMax)),
     {NewDelay, B#backoff{current=NewDelay}}.
 
 
@@ -110,3 +116,7 @@ get_env(Param, Default) ->
         {ok, Value} -> Value;
         undefined -> Default
     end.
+
+rand_between(From, To) ->
+    From2 = From - 1,
+    From2 + random:uniform(To - From2).
