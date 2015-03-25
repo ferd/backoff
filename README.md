@@ -64,7 +64,9 @@ Jitter based incremental backoffs increase the back off period for each retry at
     5> backoff:rand_increment(backoff:rand_increment(backoff:rand_increment(1))).
     17
 
-The version with 2 arguments specifies a ceiling to the value:
+The version with 2 arguments specifies a ceiling to the value. If the
+delay is close to the ceiling the new delay will also be close to the
+ceiling and may be less than the previous delay.
 
     6> backoff:rand_increment(backoff:rand_increment(backoff:rand_increment(2))).
     21

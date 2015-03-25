@@ -26,19 +26,31 @@ increment(N) when is_integer(N) -> N bsl 1.
 increment(N, Max) -> min(increment(N), Max).
 
 %% Just do the random increments by hand!
-%% Algorithm inspired in the Google HTTP Java client implementation of Class ExponentialBackOff.
-%% See: http://javadoc.google-http-java-client.googlecode.com/hg/1.18.0-rc/com/google/api/client/util/ExponentialBackOff.html
+%% Choose delay uniformly from [0.5 * Time, 1.5 * Time] as recommended in:
+%% Sally Floyd and Van Jacobson, The Synchronization of Periodic Routing Messages,
+%% April 1994 IEEE/ACM Transactions on Networking.
+%% http://ee.lbl.gov/papers/sync_94.pdf
 -spec rand_increment(pos_integer()) -> pos_integer().
 rand_increment(N) ->
-    RandFactor = get_env(rand_factor, 0.5),
-    DefMultiplier = get_env(def_multiplier, 1.5),
-    Rand = 1 - RandFactor + random:uniform(),
-    erlang:round(increment(N) * DefMultiplier * Rand).
+    %% New delay chosen from [N, 3N], i.e. [0.5 * 2N, 1.5 * 2N]
+    Width = N bsl 1,
+    N + random:uniform(Width + 1) - 1.
 
 -spec rand_increment(N, Max) -> pos_integer() when
     N :: pos_integer(),
     Max :: pos_integer().
-rand_increment(N, Max) -> min(rand_increment(N), Max).
+rand_increment(N, Max) ->
+    %% The largest interval for [0.5 * Time, 1.5 * Time] with maximum Max is
+    %% [Max div 3, Max].
+    MaxMinDelay = Max div 3,
+    if
+        MaxMinDelay =:= 0 ->
+            random:uniform(Max);
+        N > MaxMinDelay ->
+            rand_increment(MaxMinDelay);
+        true ->
+            rand_increment(N)
+    end.
 
 %% Increments + Timer support
 
@@ -103,10 +115,4 @@ maybe_seed() ->
         undefined -> random:seed(erlang:now());
         {X,X,X} -> random:seed(erlang:now());
         _ -> ok
-    end.
-
-get_env(Param, Default) ->
-    case application:get_env(?MODULE, Param) of
-        {ok, Value} -> Value;
-        undefined -> Default
     end.

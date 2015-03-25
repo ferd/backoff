@@ -23,19 +23,25 @@ prop_increment_ceiled_increases() ->
 %% and bigger values, assuming positive integers
 prop_rand_increment_increases() ->
     ?FORALL(X, pos_integer(),
-        backoff:rand_increment(X) > X).
+        begin
+            Delay = backoff:rand_increment(X),
+            ?WHENFAIL(io:format("~p~n",[{X,Delay}]),
+                Delay >= X)
+        end).
 
 %% random increments should never go higher than the max
 %% value allowed.
 prop_rand_increment_ceiled_increases() ->
     ?FORALL({X,Y}, backoff_range(),
-        ?WHENFAIL(io:format("~p~n",[{X,Y,backoff:rand_increment(X,Y)}]),
-            backoff:rand_increment(X,Y) =< Y
-            andalso
-            (backoff:rand_increment(X,Y) > X
-             orelse
-             (backoff:rand_increment(X,Y) =:= X andalso X =:= Y))
-     )).
+        begin
+            Delay = backoff:rand_increment(X, Y),
+            ?WHENFAIL(io:format("~p~n",[{X,Y,Delay}]),
+                Delay =< Y
+                andalso
+                (Delay >= X
+                 orelse
+                 (X > Y div 3 andalso Delay >= Y div 3 andalso Delay >= 1)))
+        end).
 
 %% increments from an init value always go higher when unbound
 prop_fail_increases() ->
@@ -99,6 +105,19 @@ until_fixed_point(S0, Prev) ->
        Next > Prev -> [{Next,S1} | until_fixed_point(S1, Next)]
     end.
 
+prop_statem() ->
+    Module = prop_backoff_statem,
+    ?FORALL(Cmds, commands(Module),
+        begin
+            {History, State, Result} = run_commands(Module, Cmds),
+            ?WHENFAIL(
+                begin
+                    io:format("History~n~p~n", [History]),
+                    io:format("State~n~p~n", [State]),
+                    io:format("Result~n~p~n", [Result])
+                end,
+                aggregate(command_names(Cmds), Result =:= ok))
+        end).
 
 %% Generators
 backoff() ->
