@@ -26,7 +26,7 @@ prop_rand_increment_increases() ->
         begin
             Delay = backoff:rand_increment(X),
             ?WHENFAIL(io:format("~p~n",[{X,Delay}]),
-                Delay >= X)
+                Delay >= X andalso X * 3 >= Delay)
         end).
 
 %% random increments should never go higher than the max
@@ -36,7 +36,7 @@ prop_rand_increment_ceiled_increases() ->
         begin
             Delay = backoff:rand_increment(X, Y),
             ?WHENFAIL(io:format("~p~n",[{X,Y,Delay}]),
-                Delay =< Y
+                Delay =< Y andalso X * 3 >= Delay
                 andalso
                 (Delay >= X
                  orelse

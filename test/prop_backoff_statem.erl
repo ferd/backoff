@@ -7,7 +7,7 @@
 -export([next_state/3]).
 -export([postcondition/3]).
 
--record(state, {backoff, type=normal, delay, failures=0, start, max}).
+-record(state, {backoff, type=normal, delay, start, max}).
 
 init_args() ->
     ?SUCHTHAT([X,Y], [pos_integer(), oneof([pos_integer(), infinity])],
@@ -35,11 +35,11 @@ next_state(State, B, {call, _, init, [Start, Max]}) ->
     State#state{backoff=B, delay= Start, start=Start, max=Max};
 next_state(#state{start=Start} = State, Value, {call, _, succeed, _}) ->
     NewB = {call, erlang, element, [2, Value]},
-    State#state{backoff=NewB, delay=Start, failures=0};
-next_state(#state{failures=N} = State, Value, {call, _, fail, _}) ->
+    State#state{backoff=NewB, delay=Start};
+next_state(State, Value, {call, _, fail, _}) ->
     NewDelay = {call, erlang, element, [1, Value]},
     NewB = {call, erlang, element, [2, Value]},
-    State#state{backoff=NewB, delay=NewDelay, failures=N+1};
+    State#state{backoff=NewB, delay=NewDelay};
 next_state(State, NewB, {call, _, type, [_, Type]}) ->
     State#state{backoff=NewB, type=Type};
 next_state(State, _, {call, _, get, _}) ->
@@ -55,7 +55,7 @@ postcondition(#state{type=jitter, delay=Delay, max=Max}, {call, _, fail, _},
               {NewDelay, _}) ->
     (NewDelay >= Delay orelse
      (Delay > Max div 3 andalso NewDelay >= 1 andalso NewDelay >= Max div 3))
-    andalso NewDelay =< Max;
+    andalso NewDelay =< Max andalso Delay * 3 >= NewDelay;
 postcondition(#state{delay=Delay}, {call, _, get, _}, Result) ->
     Result =:= Delay;
 postcondition(_, _, _) ->
