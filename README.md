@@ -175,5 +175,6 @@ operations.
 
 # Changelog
 
+- 1.1.1: corrections to incremental backoff
 - 1.1.0: added jitter based incremental backoff
 - 1.0.0: initial commit stable for over a year
