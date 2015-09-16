@@ -1,6 +1,5 @@
-ebin/*.beam
-ebin/*.app
 *.beam
+_build/
 erl_crash.dump
 deps/
 doc/*.html

@@ -2,5 +2,7 @@
  [{description, "Exponential backoffs library"},
   {vsn, "1.1.1"},
   {applications, [stdlib, kernel]},
-  {registered, []}
+  {registered, []},
+  {licenses, ["MIT"]},
+  {links, [{"Github", "https://github.com/ferd/backoff"}]}
 ]}.
