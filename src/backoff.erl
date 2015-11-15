@@ -112,7 +112,14 @@ succeed(B=#backoff{start=Start}) ->
 
 maybe_seed() ->
     case erlang:get(random_seed) of
-        undefined -> random:seed(erlang:now());
-        {X,X,X} -> random:seed(erlang:now());
+        undefined -> random:seed(
+                      erlang:phash2([node()]),
+                      erlang:monotonic_time(),
+                      erlang:unique_integer());
+        {X,X,X} -> random:seed(
+                      erlang:phash2([node()]),
+                      erlang:monotonic_time(),
+                      erlang:unique_integer());
+
         _ -> ok
     end.
