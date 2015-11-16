@@ -18,7 +18,7 @@ everything needed:
     Erlang R16B (erts-5.10.1) [source] [64-bit] [smp:4:4] [async-threads:10] [hipe] [kernel-poll:false]
     
     Eshell V5.10.1  (abort with ^G)
-    1> c("test/prop_backoff"), proper:module(prop_backoff).
+    1> c("test/prop_backoff"), c("test/prop_backoff_statem"), proper:module(prop_backoff).
     ...
     []
 
