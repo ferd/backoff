@@ -16,6 +16,13 @@
 
 -export_type([backoff/0]).
 
+
+-ifdef(OLD_RANDOM).
+-define(random, random).
+-else.
+-define(random, rand).
+-endif.
+
 %% Just do the increments by hand!
 -spec increment(pos_integer()) -> pos_integer().
 increment(N) when is_integer(N) -> N bsl 1.
@@ -34,7 +41,7 @@ increment(N, Max) -> min(increment(N), Max).
 rand_increment(N) ->
     %% New delay chosen from [N, 3N], i.e. [0.5 * 2N, 1.5 * 2N]
     Width = N bsl 1,
-    N + random:uniform(Width + 1) - 1.
+    N + ?random:uniform(Width + 1) - 1.
 
 -spec rand_increment(N, Max) -> pos_integer() when
     N :: pos_integer(),
@@ -45,7 +52,7 @@ rand_increment(N, Max) ->
     MaxMinDelay = Max div 3,
     if
         MaxMinDelay =:= 0 ->
-            random:uniform(Max);
+            ?random:uniform(Max);
         N > MaxMinDelay ->
             rand_increment(MaxMinDelay);
         true ->
@@ -110,9 +117,13 @@ fail(B=#backoff{current=Delay, max=Max, type=jitter}) ->
 succeed(B=#backoff{start=Start}) ->
     {Start, B#backoff{current=Start}}.
 
+-ifdef(OLD_RANDOM).
 maybe_seed() ->
     case erlang:get(random_seed) of
         undefined -> random:seed(erlang:now());
         {X,X,X} -> random:seed(erlang:now());
         _ -> ok
     end.
+-else.
+maybe_seed() -> ok.
+-endif.
