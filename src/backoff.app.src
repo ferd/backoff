@@ -1,6 +1,6 @@
 {application, backoff,
  [{description, "Exponential backoffs library"},
-  {vsn, "1.1.1"},
+  {vsn, "1.1.2"},
   {applications, [stdlib, kernel]},
   {registered, []},
   {licenses, ["MIT"]},
