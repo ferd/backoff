@@ -175,6 +175,7 @@ operations.
 
 # Changelog
 
+- 1.1.3: switch to package version of PropEr plugin to avoid mix conflicts
 - 1.1.2: eliminate compilation warnings
 - 1.1.1: corrections to incremental backoff
 - 1.1.0: added jitter based incremental backoff
