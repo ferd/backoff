@@ -10,7 +10,7 @@
                   current :: pos_integer(),
                   type=normal :: normal | jitter,
                   value :: term(),
-                  dest :: pid()}).
+                  dest :: pid() | undefined }).
 
 -opaque backoff() :: #backoff{}.
 
