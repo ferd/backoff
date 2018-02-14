@@ -6,7 +6,7 @@ reconnections, or generally retrying things.
 
 # Compiling
 
-    ./rebar get-deps compile
+    rebar3 compile
 
 # Running Tests
 
@@ -14,13 +14,7 @@ Tests are implemented as a basic PropEr property-based test suite. Running them
 requires getting PropEr for the project. The following command line does
 everything needed:
 
-    $ ./rebar get-deps compile --config rebar.test.config && erl -pa ebin -env ERL_LIBS deps
-    Erlang R16B (erts-5.10.1) [source] [64-bit] [smp:4:4] [async-threads:10] [hipe] [kernel-poll:false]
-    
-    Eshell V5.10.1  (abort with ^G)
-    1> c("test/prop_backoff"), c("test/prop_backoff_statem"), proper:module(prop_backoff).
-    ...
-    []
+    $ rebar3 proper
 
 # Modes of Operation
 
@@ -175,6 +169,7 @@ operations.
 
 # Changelog
 
+- 1.1.4: fix dialyzer warnings, update doc
 - 1.1.3: switch to package version of PropEr plugin to avoid mix conflicts
 - 1.1.2: eliminate compilation warnings
 - 1.1.1: corrections to incremental backoff

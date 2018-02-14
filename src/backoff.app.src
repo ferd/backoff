@@ -1,8 +1,10 @@
 {application, backoff,
  [{description, "Exponential backoffs library"},
-  {vsn, "1.1.3"},
+  {vsn, "1.1.4"},
   {applications, [stdlib, kernel]},
   {registered, []},
+
   {licenses, ["MIT"]},
-  {links, [{"Github", "https://github.com/ferd/backoff"}]}
+  {links, [{"Github", "https://github.com/ferd/backoff"}]},
+  {maintainers, ["Fred Hebert"]}
 ]}.
