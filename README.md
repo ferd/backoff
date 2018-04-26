@@ -14,7 +14,7 @@ Tests are implemented as a basic PropEr property-based test suite. Running them
 requires getting PropEr for the project. The following command line does
 everything needed:
 
-    $ rebar3 proper
+    $ rebar3 as test proper
 
 # Modes of Operation
 
@@ -169,6 +169,7 @@ operations.
 
 # Changelog
 
+- 1.1.5: move `proper` plugin to test profile to avoid build warnings on newer Erlangs
 - 1.1.4: fix dialyzer warnings, update doc
 - 1.1.3: switch to package version of PropEr plugin to avoid mix conflicts
 - 1.1.2: eliminate compilation warnings
