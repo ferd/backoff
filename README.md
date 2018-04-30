@@ -169,6 +169,7 @@ operations.
 
 # Changelog
 
+- 1.1.6: fix compile regexes since darwin version 17.5 would be confused with OTP 17.x
 - 1.1.5: move `proper` plugin to test profile to avoid build warnings on newer Erlangs
 - 1.1.4: fix dialyzer warnings, update doc
 - 1.1.3: switch to package version of PropEr plugin to avoid mix conflicts
